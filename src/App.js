@@ -4,15 +4,16 @@ import './App.css';
 import Constants from './Constants';
 import Player from './../node_modules/midi-player-js';
 import Mario from './mario-midi.js';
+import Buns from './hot-cross-buns-midi.js';
 
 class App extends Component {
   constructor() {
     super();
     var MidiPlayer = new Player.Player()
     MidiPlayer.loadDataUri(Mario);
-    console.log(MidiPlayer.events);
-    this.midiEvents = MidiPlayer.events[3];
-    this.beat_pixel_length = 10;
+    //console.log(MidiPlayer.events);
+    this.midiEvents = MidiPlayer.events[6];
+    this.beat_pixel_length = 20;
     this.beat_division =  MidiPlayer.division;
     this.tick_pixel_length = this.beat_pixel_length / this.beat_division;
     //console.log(Constants)
@@ -38,8 +39,8 @@ class App extends Component {
 
 class Piano extends Component {
   render() {
-    var rows = Constants.NOTES.map(function(note, midiNumber) {
-      return <PianoRow key={midiNumber} noteName={note} isBlackKey={true} />;
+    var rows = Constants.NOTES.map(noteObject => {
+      return <PianoRow key={noteObject.midiNumber} midiNumber={noteObject.midiNumber} noteName={noteObject.noteName} />;
     });
 
     return (
@@ -53,7 +54,7 @@ class Piano extends Component {
 class PianoRow extends Component {
   render() {
     return (
-      <div className="PianoRow">
+      <div className="PianoRow" data-midi-number={this.props.midiNumber}>
         {this.props.noteName}
       </div>
     );
@@ -64,8 +65,8 @@ class Roll extends Component {
   render() {
     var rows = [];
 
-    Constants.NOTES.forEach(function(note, midiNumber) {
-      rows.push(<Row key={midiNumber} midiNumber={midiNumber} midiEvents={this.props.midiEvents} commonValues={this.props.commonValues} />);
+    Constants.NOTES.forEach(function(noteObject) {
+      rows.push(<Row key={noteObject.midiNumber} midiNumber={noteObject.midiNumber} midiEvents={this.props.midiEvents} commonValues={this.props.commonValues} />);
     }.bind(this));
 
     return (
@@ -77,15 +78,30 @@ class Roll extends Component {
 }
 
 class Row extends Component {
+
   render() {
+    // Grab MIDI events for this particular row
     var midiEvents = this.props.midiEvents.filter(function(event) {
       if (event.noteNumber === this.props.midiNumber) return true;
       return false;
     }.bind(this));
 
+
+    /** 
+    * Process of building squares:
+    * Mark the start of a note, but
+    *
+    */
+
     var squares = midiEvents.map(function(event, index) {
       if (event.name === 'Note on') {
-        return <Square key={index} width="20" left={event.tick * this.props.commonValues.tickPixelLength} />
+        // The next event should either be a "Note on" with 0 velocity (running status), or a "Note off".
+        if (event.velocity > 0) {
+            let width = midiEvents[index + 1].delta;
+            return <Square key={index} width={width * this.props.commonValues.tickPixelLength} left={event.tick * this.props.commonValues.tickPixelLength} />
+        }
+
+        return null;
       }
     }.bind(this));
 

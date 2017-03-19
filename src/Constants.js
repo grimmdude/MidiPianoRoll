@@ -4,15 +4,18 @@ var Constants = {
 };
 
 // Builds notes object for reference against binary values.
-var allNotes = [['C'], ['C#','Db'], ['D'], ['D#','Eb'], ['E'],['F'], ['F#','Gb'], ['G'], ['G#','Ab'], ['A'], ['A#','Bb'], ['B']];
+var allNotes = [['C'], ['C#'], ['D'], ['D#'], ['E'], ['F'], ['F#'], ['G'], ['G#'], ['A'], ['A#'], ['B']];
 var counter = 0;
 
 // All available octaves.
 for (let i = -1; i <= 9; i++) {
-	allNotes.forEach(function(noteGroup) {
-		noteGroup.forEach(function(note) {Constants.NOTES[counter] = note + i});
+	allNotes.forEach((noteGroup) => {
+		noteGroup.forEach(note => Constants.NOTES.push({"midiNumber": counter, "noteName": note +i}));
 		counter ++;
 	});
 }
+
+// Reverse so that pitches go from high to low
+Constants.NOTES.sort((a, b) => b.midiNumber - a.midiNumber);
 
 export default Constants;

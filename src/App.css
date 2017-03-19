@@ -49,7 +49,8 @@
 
 .Row .Square {
   position:absolute;
-  background:#ddd;
+  background:#888;
   height:100%;
+  border:1px solid #484848;
 }
 
