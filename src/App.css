@@ -1,0 +1,55 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.Piano {
+  width:30px;
+  float:left;
+  overflow:hidden;
+  border-right:1px solid #ccc;
+}
+
+.PianoRow {
+  text-align:left;
+  font-size:8px;
+}
+
+.Roll {
+  max-width:100%;
+  overflow:auto;
+}
+
+.Roll .Row, .Piano .PianoRow {
+  width:200%;
+  border:1px solid #ccc;
+  height:8px;
+  position:relative;
+}
+
+.Row .Square {
+  position:absolute;
+  background:#ddd;
+  height:100%;
+}
+
