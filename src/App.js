@@ -94,6 +94,7 @@ class Roll extends Component {
 
     return (
       <div className="Roll">
+        <div className="beat-lines"></div>
         {rows}
         <Playhead />
       </div>

@@ -81,8 +81,6 @@
   position:relative;
   max-width:100%;
   overflow:auto;
-  background-size: 20px;
-  background-image: linear-gradient(to right, #F1F1F1 1px, transparent 1px);
 }
 
 .Roll .Row, .Piano .PianoRow {
@@ -100,5 +98,15 @@
   background:#888;
   height:100%;
   border:1px solid #2F2F2F;
+}
+
+.beat-lines {
+  position:absolute;
+  top:0;
+  left:0;
+  width:2000%;
+  height:100%;
+  background-size: 20px;
+  background-image: linear-gradient(to right, #F1F1F1 1px, transparent 1px);
 }
 
