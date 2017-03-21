@@ -37,9 +37,32 @@ class App extends Component {
   }
 }
 
+class Playhead extends Component {
+  render() {
+    return (
+      <div className="Playhead"></div>
+    );
+  }
+}
+
+class Ruler extends Component {
+  render() {
+    // How many beat markers to render?
+    var beatMarkers = [];
+
+    for (var i = 1; i <= 2000; i++) {
+       beatMarkers.push(<li key={i.toString()}></li>);
+    }
+
+    return (
+     <ul className="ruler">{beatMarkers}</ul>
+    );
+  }
+}
+
 class Piano extends Component {
   render() {
-    var rows = Constants.NOTES.map(noteObject => {
+    const rows = Constants.NOTES.map(noteObject => {
       return <PianoRow key={noteObject.midiNumber} midiNumber={noteObject.midiNumber} noteName={noteObject.noteName} />;
     });
 
@@ -72,6 +95,7 @@ class Roll extends Component {
     return (
       <div className="Roll">
         {rows}
+        <Playhead />
       </div>
     );
   }

@@ -23,6 +23,40 @@
   to { transform: rotate(360deg); }
 }
 
+.ruler, .ruler li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: inline-block;
+}
+/* IE6-7 Fix */
+.ruler, .ruler li {
+    *display: inline;
+}
+.ruler {
+    border: 1px solid #ccc;
+    color: #ccc;
+    margin: 0;
+    height: 3em;
+    padding-right: 1cm;
+    white-space: nowrap;
+}
+.ruler li {
+    padding-left: 20px;
+    width: 2em;
+    margin: .64em -1em -.64em;
+    text-align: center;
+    position: relative;
+}
+.ruler li:before {
+    content: '';
+    position: absolute;
+    border-left: 1px solid #ccc;
+    height: .64em;
+    top: -.64em;
+    right: 1em;
+}
+
 .Piano {
   width:30px;
   float:left;
@@ -35,22 +69,36 @@
   font-size:8px;
 }
 
+.Playhead {
+  width:2px;
+  height:100%;
+  background:#419a6b;
+  position:absolute;
+  top:0;
+}
+
 .Roll {
+  position:relative;
   max-width:100%;
   overflow:auto;
+  background-size: 20px;
+  background-image: linear-gradient(to right, #F1F1F1 1px, transparent 1px);
 }
 
 .Roll .Row, .Piano .PianoRow {
-  width:200%;
+  width:2000%;
   border:1px solid #ccc;
   height:8px;
   position:relative;
 }
 
 .Row .Square {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
   position:absolute;
   background:#888;
   height:100%;
-  border:1px solid #484848;
+  border:1px solid #2F2F2F;
 }
 
