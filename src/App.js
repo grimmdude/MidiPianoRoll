@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Constants from './Constants';
 import Player from './../node_modules/midi-player-js';
@@ -9,9 +8,17 @@ import Buns from './hot-cross-buns-midi.js';
 class App extends Component {
   constructor() {
     super();
-    this.state = {selectedTrack: 0};
-    this.midiPlayer = new Player.Player()
+    this.state = {
+                  selectedTrack: 0,
+                  currentTick: 0
+                  };
+    this.midiPlayer = new Player.Player();
     this.midiPlayer.loadDataUri(Mario);
+    this.midiPlayer.on('playing', function(tick) {
+      this.handlePlayTick(tick.tick);
+
+    }.bind(this));
+    //this.midiPlayer.play();
     this.midiEvents = this.midiPlayer.events[this.state.selectedTrack];
     this.beat_pixel_length = 20;
     this.tick_pixel_length = this.beat_pixel_length / this.midiPlayer.division;
@@ -19,11 +26,18 @@ class App extends Component {
       "tickPixelLength" : this.beat_pixel_length / this.midiPlayer.division
     };
     this.handleTrackChange = this.handleTrackChange.bind(this);
+    this.handlePlayTick = this.handlePlayTick.bind(this);
   }
 
   handleTrackChange(selectedTrack) {
     this.setState({selectedTrack: selectedTrack});
+    this.setState({currentTick:this.state.currentTick+10});
     this.midiEvents = this.midiPlayer.events[selectedTrack];
+  }
+
+  handlePlayTick(tick) {
+    console.log(tick)
+    this.setState({currentTick:tick});
   }
 
   render() {
@@ -31,12 +45,11 @@ class App extends Component {
     return (
       <div className="App">
         <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
           <h2>Welcome to React Piano Roll</h2>
           <SelectTrack midiPlayer={this.midiPlayer} onTrackChange={this.handleTrackChange} />
         </div>
         <Piano />
-        <Roll midiEvents={this.midiEvents} commonValues={this.commonValues} />
+        <Roll midiEvents={this.midiEvents} commonValues={this.commonValues} appState={this.state} />
       </div>
     );
   }
@@ -45,22 +58,7 @@ class App extends Component {
 class Playhead extends Component {
   render() {
     return (
-      <div className="Playhead"></div>
-    );
-  }
-}
-
-class Ruler extends Component {
-  render() {
-    // How many beat markers to render?
-    var beatMarkers = [];
-
-    for (var i = 1; i <= 2000; i++) {
-       beatMarkers.push(<li key={i.toString()}></li>);
-    }
-
-    return (
-     <ul className="ruler">{beatMarkers}</ul>
+      <div className="Playhead" style={{left:this.props.appState.currentTick}}></div>
     );
   }
 }
@@ -101,7 +99,7 @@ class Roll extends Component {
       <div className="Roll">
         <div className="beat-lines"></div>
         {rows}
-        <Playhead />
+        <Playhead appState={this.props.appState} />
       </div>
     );
   }
@@ -126,7 +124,7 @@ class Row extends Component {
     var squares = midiEvents.map(function(event, index) {
       if (event.name === 'Note on') {
         // The next event should either be a "Note on" with 0 velocity (running status), or a "Note off".
-        if (event.velocity > 0) {
+        if (event.velocity > 0 && midiEvents[index + 1]) {
             let width = midiEvents[index + 1].delta;
             return <Square key={index} width={width * this.props.commonValues.tickPixelLength} left={event.tick * this.props.commonValues.tickPixelLength} />
         }
