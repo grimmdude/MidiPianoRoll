@@ -9,17 +9,21 @@ import Buns from './hot-cross-buns-midi.js';
 class App extends Component {
   constructor() {
     super();
-    var MidiPlayer = new Player.Player()
-    MidiPlayer.loadDataUri(Mario);
-    //console.log(MidiPlayer.events);
-    this.midiEvents = MidiPlayer.events[6];
+    this.state = {selectedTrack: 0};
+    this.midiPlayer = new Player.Player()
+    this.midiPlayer.loadDataUri(Mario);
+    this.midiEvents = this.midiPlayer.events[this.state.selectedTrack];
     this.beat_pixel_length = 20;
-    this.beat_division =  MidiPlayer.division;
-    this.tick_pixel_length = this.beat_pixel_length / this.beat_division;
-    //console.log(Constants)
+    this.tick_pixel_length = this.beat_pixel_length / this.midiPlayer.division;
     this.commonValues = {
-      "tickPixelLength" : this.beat_pixel_length / this.beat_division
+      "tickPixelLength" : this.beat_pixel_length / this.midiPlayer.division
     };
+    this.handleTrackChange = this.handleTrackChange.bind(this);
+  }
+
+  handleTrackChange(selectedTrack) {
+    this.setState({selectedTrack: selectedTrack});
+    this.midiEvents = this.midiPlayer.events[selectedTrack];
   }
 
   render() {
@@ -29,6 +33,7 @@ class App extends Component {
         <div className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h2>Welcome to React Piano Roll</h2>
+          <SelectTrack midiPlayer={this.midiPlayer} onTrackChange={this.handleTrackChange} />
         </div>
         <Piano />
         <Roll midiEvents={this.midiEvents} commonValues={this.commonValues} />
@@ -143,6 +148,25 @@ class Square extends Component {
   render() {
     return (
       <div className="Square" style={{"width" : this.props.width   + "px", "left" : this.props.left   + "px"}}></div>
+    );
+  }
+}
+
+class SelectTrack extends Component {
+  constructor(props) {
+    super(props);
+    this.handleChange = this.handleChange.bind(this);
+  }
+
+  handleChange(event) {
+    this.props.onTrackChange(event.target.value);
+  }
+
+  render() {
+    var options = this.props.midiPlayer.tracks.map((element, index) => <option key={index}>{index}</option>);
+
+    return (
+      <p><label>Select Track</label><select onChange={this.handleChange} style={{"color" : "black"}}>{options}</select></p>
     );
   }
 }

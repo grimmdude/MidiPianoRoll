@@ -9,7 +9,6 @@
 
 .App-header {
   background-color: #222;
-  height: 150px;
   padding: 20px;
   color: white;
 }
@@ -67,6 +66,16 @@
 .PianoRow {
   text-align:left;
   font-size:8px;
+}
+
+/* two selectors are required */
+.PianoRow:nth-child(12n+2),
+.PianoRow:nth-child(12n+4),
+.PianoRow:nth-child(12n+6),
+.PianoRow:nth-child(12n+9), 
+.PianoRow:nth-child(12n+11) {
+  background:#222;
+  color:#F5F5F5;
 }
 
 .Playhead {
