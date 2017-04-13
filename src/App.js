@@ -3,7 +3,7 @@ import './css/App.css';
 import Constants from './Constants';
 import Player from './../node_modules/midi-player-js';
 import Mario from './midi/mario-midi.js';
-//import Buns from './midi/hot-cross-buns-midi.js';
+import Buns from './midi/hot-cross-buns-midi.js';
 
 class App extends Component {
   constructor() {
@@ -14,11 +14,13 @@ class App extends Component {
     // Initialize MIDI parser/player
     this.midiPlayer = new Player.Player();
     this.midiPlayer.on('playing', function(tick) {
-      this.handlePlayTick(tick.tick);
-
+      if (tick.tick % 20 == 0) {
+        //console.log(tick)
+        this.handlePlayTick(tick.tick);
+      }
     }.bind(this));
-    this.midiPlayer.loadDataUri(Mario);
 
+    this.midiPlayer.loadDataUri(Mario);
     //this.midiPlayer.play();
 
     this.state = {
@@ -37,15 +39,14 @@ class App extends Component {
     this.handlePlayTick = this.handlePlayTick.bind(this);
   }
 
-  handleTrackChange(selectedTrack) {
+  handleTrackChange(event) {
     this.setState({
-                    selectedTrack:  selectedTrack,
-                    midiEvents:     this.midiPlayer.events[selectedTrack],
-                    currentTick:    this.state.currentTick + 10
+                    selectedTrack:  event.target.value,
+                    midiEvents:     this.midiPlayer.events[event.target.value]
                   });
   }
 
-  handleFileChange(file) {
+  handleFileChange(event) {
     var reader  = new FileReader();
 
     reader.onload = function(e) {
@@ -63,7 +64,7 @@ class App extends Component {
       
     }.bind(this);
 
-    reader.readAsArrayBuffer(file);
+    reader.readAsArrayBuffer(event.target.files[0]);
   }
 
   handlePlayTick(tick) {
@@ -77,25 +78,35 @@ class App extends Component {
   }
 
   render() {
+    var options = this.midiPlayer.tracks.map((element, index) => <option key={index}>{index}</option>);
+    var rows = [];
+
+    Constants.NOTES.forEach(function(noteObject) {
+      rows.push(<Row key={noteObject.midiNumber} midiNumber={noteObject.midiNumber} midiEvents={this.state.midiEvents} appState={this.state} />);
+    }.bind(this));
 
     return (
       <div className="App">
         <div className="App-header">
           <h2>Welcome to React Piano Roll</h2>
-          <ChooseFile onFileChange={this.handleFileChange} appState={this.state} />
-          <SelectTrack midiPlayer={this.midiPlayer} onTrackChange={this.handleTrackChange} />
+          <div>
+            <input type="file" onChange={this.handleFileChange} />
+            {this.state.error &&
+              <p>{this.state.error}</p>
+            }
+          </div>
+          <p>
+            <label>Select Track</label>
+            <select onChange={this.handleTrackChange} style={{"color": "#000"}}>{options}</select>
+          </p>
         </div>
         <Piano />
-        <Roll appState={this.state} />
+        <div className="Roll">
+          <div className="beat-lines"></div>
+          {rows}
+          <div className="Playhead" style={{transform: 'translate(' + this.state.currentTick * this.state.tickPixelLength + 'px)'}}></div>
+        </div>
       </div>
-    );
-  }
-}
-
-class Playhead extends Component {
-  render() {
-    return (
-      <div className="Playhead" style={{left: this.props.appState.currentTick}}></div>
     );
   }
 }
@@ -119,24 +130,6 @@ class PianoRow extends Component {
     return (
       <div className="PianoRow" data-midi-number={this.props.midiNumber}>
         {this.props.noteName}
-      </div>
-    );
-  }
-}
-
-class Roll extends Component {
-  render() {
-    var rows = [];
-
-    Constants.NOTES.forEach(function(noteObject) {
-      rows.push(<Row key={noteObject.midiNumber} midiNumber={noteObject.midiNumber} midiEvents={this.props.appState.midiEvents} appState={this.props.appState} />);
-    }.bind(this));
-
-    return (
-      <div className="Roll">
-        <div className="beat-lines"></div>
-        {rows}
-        <Playhead appState={this.props.appState} />
       </div>
     );
   }
@@ -176,47 +169,6 @@ class Square extends Component {
   render() {
     return (
       <div className="Square" style={{"width": this.props.width   + "px", "left": this.props.left   + "px"}}></div>
-    );
-  }
-}
-
-class ChooseFile extends Component {
-  constructor() {
-    super();
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  handleChange(event) {
-    this.props.onFileChange(event.target.files[0]);
-  }
-
-  render() {
-    return (
-      <div>
-        <input type="file" onChange={this.handleChange} />
-        {this.props.appState.error &&
-          <p>{this.props.appState.error}</p>
-        }
-      </div>
-    );
-  }
-}
-
-class SelectTrack extends Component {
-  constructor(props) {
-    super(props);
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  handleChange(event) {
-    this.props.onTrackChange(event.target.value);
-  }
-
-  render() {
-    var options = this.props.midiPlayer.tracks.map((element, index) => <option key={index}>{index}</option>);
-
-    return (
-      <p><label>Select Track</label><select onChange={this.handleChange} style={{"color": "#000"}}>{options}</select></p>
     );
   }
 }
