@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import './css/App.css';
 import Constants from './Constants';
-import Player from './../node_modules/midi-player-js';
 import Mario from './midi/mario-midi.js';
-import Buns from './midi/hot-cross-buns-midi.js';
+//import Buns from './midi/hot-cross-buns-midi.js';
+import Player from 'midi-player-js';
 
 class App extends Component {
   constructor() {
@@ -12,9 +12,12 @@ class App extends Component {
     this.beat_pixel_length = 20;
 
     // Initialize MIDI parser/player
-    this.midiPlayer = new Player.Player();
+    this.midiPlayer = new Player.Player((event) => {
+      this.handleMidiEvent(event);
+    });
+
     this.midiPlayer.on('playing', function(tick) {
-      if (tick.tick % 20 == 0) {
+      if (true || tick.tick % 20 === 0) {
         //console.log(tick)
         this.handlePlayTick(tick.tick);
       }
@@ -28,7 +31,8 @@ class App extends Component {
                   selectedTrack:    0,
                   currentTick:      0,
                   midiEvents:       this.midiPlayer.events[0],
-                  tickPixelLength:  this.beat_pixel_length / this.midiPlayer.division
+                  tickPixelLength:  this.beat_pixel_length / this.midiPlayer.division,
+                  activeNoteNumbers: [],
                   };
 
     this.settingState = false;
@@ -37,6 +41,10 @@ class App extends Component {
     this.handleTrackChange = this.handleTrackChange.bind(this);
     this.handleFileChange = this.handleFileChange.bind(this);
     this.handlePlayTick = this.handlePlayTick.bind(this);
+  }
+
+  play = () => {
+    this.midiPlayer.play();
   }
 
   handleTrackChange(event) {
@@ -77,6 +85,14 @@ class App extends Component {
     }
   }
 
+  handleMidiEvent = (event) => {
+    if (event.name === 'Note on') {
+      const activeNoteNumbers = [...this.state.activeNoteNumbers];
+      activeNoteNumbers.push(event.noteNumber);
+      this.setState({activeNoteNumbers});
+    }
+  }
+
   render() {
     var options = this.midiPlayer.tracks.map((element, index) => <option key={index}>{index}</option>);
     var rows = [];
@@ -99,12 +115,15 @@ class App extends Component {
             <label>Select Track</label>
             <select onChange={this.handleTrackChange} style={{"color": "#000"}}>{options}</select>
           </p>
+          <p><button onClick={this.play}>Play</button></p>
         </div>
-        <Piano />
+        <Piano activeNoteNumbers={this.state.activeNoteNumbers} />
         <div className="Roll">
           <div className="beat-lines"></div>
           {rows}
-          <div className="Playhead" style={{transform: 'translate(' + this.state.currentTick * this.state.tickPixelLength + 'px)'}}></div>
+          {/*<div className="Playhead" style={{transform: 'translate(' + this.state.currentTick * this.state.tickPixelLength + 'px)'}}></div>*/}
+
+          <Playhead currentTick={this.state.currentTick} tickPixelLength={this.state.tickPixelLength} />
         </div>
       </div>
     );
@@ -114,7 +133,7 @@ class App extends Component {
 class Piano extends Component {
   render() {
     const rows = Constants.NOTES.map(noteObject => {
-      return <PianoRow key={noteObject.midiNumber} midiNumber={noteObject.midiNumber} noteName={noteObject.noteName} />;
+      return <PianoRow key={noteObject.midiNumber} midiNumber={noteObject.midiNumber} noteName={noteObject.noteName} active={this.props.activeNoteNumbers.indexOf(noteObject.midiNumber) >= 0} />;
     });
 
     return (
@@ -129,7 +148,7 @@ class PianoRow extends Component {
   render() {
     return (
       <div className="PianoRow" data-midi-number={this.props.midiNumber}>
-        {this.props.noteName}
+        {this.props.noteName} {this.props.active ? 'YES':''}
       </div>
     );
   }
@@ -170,6 +189,12 @@ class Square extends Component {
     return (
       <div className="Square" style={{"width": this.props.width   + "px", "left": this.props.left   + "px"}}></div>
     );
+  }
+}
+
+class Playhead extends Component {
+  render() {
+    return <div className="Playhead" style={{transform: 'translate(' + this.props.currentTick * this.props.tickPixelLength + 'px)'}}></div>
   }
 }
 
